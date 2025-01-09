@@ -4,6 +4,7 @@ const cors = require('cors');
 const app = express();
 const bodyparser = require('body-parser');
 const dns = require('dns');
+const { log } = require('console');
 // Basic Configuration
 const port = process.env.PORT || 3000;
 var global = new Array();
@@ -23,7 +24,7 @@ app.get('/api/hello', function (req, res) {
 
 app.get('/api/shorturl/:short_url', (req, res) => {
   let short_url = parseInt(req.params.short_url)
-  global.at(short_url - 1) ? res.redirect(global.at(short_url - 1)) : res.json({ error: 'invalid url' })
+  global.at(short_url) ? res.redirect(global.at(short_url).original_url) : res.json({ error: 'invalid url' })
 });
 
 app.post('/api/shorturl', bodyparser.urlencoded({ extended: false }),
@@ -37,8 +38,8 @@ app.post('/api/shorturl', bodyparser.urlencoded({ extended: false }),
       }
     });
   }, (req, res) => {
-    if (req.body && req.body.url && new RegExp('/https?://www\..*\..*').test(req.body.url)) {
-      let data = { original_url: req.body.url, short_url: global.length + 1 };
+    if (req.body && req.body.url ) {
+      let data = { original_url: req.body.url, short_url: global.length };
       global.push(data)
       return res.json(data)
     }
